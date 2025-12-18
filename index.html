@@ -35,7 +35,6 @@
             margin: 0;
             padding: 0;
             font-family: 'Inter', sans-serif;
-            /* Disables highlight color on tap for a more native feel */
             -webkit-tap-highlight-color: transparent; 
         }
 
@@ -45,16 +44,15 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* Prevents the 'bounce' effect on the whole page */
             overscroll-behavior: none;
         }
 
         /* --- Header Section --- */
         .app-header {
             background: linear-gradient(135deg, #4ade80 0%, #2dd4bf 100%);
-            /* Using env() handles the iPhone notch area correctly */
             padding-top: max(40px, env(safe-area-inset-top) + 20px); 
-            padding-bottom: 80px;
+            /* INCREASED padding-bottom slightly to accommodate the higher card overlap */
+            padding-bottom: 120px;
             padding-left: 20px;
             padding-right: 20px;
             color: white;
@@ -82,18 +80,16 @@
             flex: 1;
             overflow-y: auto;
             padding: 0 16px;
-            margin-top: -60px;
+            /* CHANGED from -60px to -90px to pull the card higher up */
+            margin-top: -90px;
             z-index: 2;
-            /* Add padding to bottom to account for iPhone Home Bar and Nav */
             padding-bottom: calc(80px + env(safe-area-inset-bottom));
-            
-            /* Native-like scrolling momentum */
             -webkit-overflow-scrolling: touch; 
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
         
         main::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
         }
 
         /* --- Common Components --- */
@@ -115,7 +111,7 @@
             align-items: center;
             padding: 15px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
             cursor: pointer;
         }
 
@@ -279,7 +275,6 @@
             background: white;
             display: flex;
             justify-content: space-around;
-            /* Respect iPhone Home Bar safe area */
             padding-bottom: env(safe-area-inset-bottom);
             padding-top: 12px;
             height: calc(60px + env(safe-area-inset-bottom));
@@ -355,7 +350,9 @@
                         <h2>All Occupied</h2>
                         <p>0 / 1 washers</p>
                     </div>
-                    <div class="status-circle water"></div>
+                    <div class="status-circle dryer">
+                        <!-- <i class="fa-solid fa-socks"></i> -->
+                    </div>
                 </div>
             </div>
 
@@ -370,7 +367,7 @@
                         <p>0 / 1 dryers</p>
                     </div>
                     <div class="status-circle dryer">
-                        <i class="fa-solid fa-socks"></i>
+                        <!-- <i class="fa-solid fa-socks"></i> -->
                     </div>
                 </div>
             </div>
