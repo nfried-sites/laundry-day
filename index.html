@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Laundry App">
 
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#4ade80">
+    <meta name="theme-color" content="#4aadde">
 
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkxhdW5kcnkgQXBwIiwKICAic2hvcnRfbmFtZSI6ICJMYXVuZHJ5IiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmM2Y0ZjYiLAogICJ0aGVtZV9jb2xvciI6ICIjNGFkZTgwIgp9">
 
@@ -75,21 +75,15 @@
             font-weight: 700;
         }
 
-        /* --- Main Scrollable Area --- */
+        /* --- Main Content Area (no scrolling) --- */
         main {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             padding: 0 16px;
             /* CHANGED from -60px to -90px to pull the card higher up */
             margin-top: -90px;
             z-index: 2;
             padding-bottom: calc(80px + env(safe-area-inset-bottom));
-            -webkit-overflow-scrolling: touch; 
-            scrollbar-width: none;
-        }
-        
-        main::-webkit-scrollbar {
-            display: none;
         }
 
         /* --- Common Components --- */
