@@ -49,7 +49,7 @@
 
         /* --- Header Section --- */
         .app-header {
-            background: linear-gradient(135deg, #4ade80 0%, #2dd4bf 100%);
+            background: linear-gradient(135deg, #4aadde 0%, #2d75d4 100%);
             padding-top: max(40px, env(safe-area-inset-top) + 20px); 
             /* INCREASED padding-bottom slightly to accommodate the higher card overlap */
             padding-bottom: 120px;
@@ -133,6 +133,9 @@
         }
 
         /* --- Status Cards --- */
+        .status-card {
+            cursor: pointer;
+        }
         .status-header {
             display: flex;
             justify-content: space-between;
@@ -171,12 +174,27 @@
             height: 60px;
             background: #e5e7eb;
             border-radius: 50%;
+            border: 5px solid #d1d5db;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-circle.washer-icon {
+            background-image: url('washerContent.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center bottom;
+        }
+
+        .status-circle.dryer-icon {
+            background-image: url('dryerContent.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center bottom;
         }
         
         .status-circle.water::after {
@@ -321,6 +339,54 @@
             100% { transform: translateY(0) rotate(0deg); }
         }
 
+        /* --- Ad Popup --- */
+        .ad-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .ad-overlay.active {
+            display: flex;
+        }
+        .ad-popup {
+            background: white;
+            border-radius: 16px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .ad-popup img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .ad-popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
     </style>
 </head>
 <body>
@@ -340,35 +406,31 @@
                 <i class="fa-solid fa-chevron-right" style="margin-left: auto;"></i>
             </div>
 
-            <div class="card">
+            <div class="card status-card" data-type="washer" data-total="1" data-available="1" onclick="onStatusCardClick(this)">
                 <div class="status-header">
                     <span>Washers</span>
                     <a href="#" class="view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
                 </div>
                 <div class="status-content">
                     <div class="status-text">
-                        <h2>All Occupied</h2>
-                        <p>0 / 1 washers</p>
+                        <h2>1 Available</h2>
+                        <p>1 / 1 washers</p>
                     </div>
-                    <div class="status-circle dryer">
-                        <!-- <i class="fa-solid fa-socks"></i> -->
-                    </div>
+                    <div class="status-circle washer-icon"></div>
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card status-card" data-type="dryer" data-total="1" data-available="1" onclick="onStatusCardClick(this)">
                 <div class="status-header">
                     <span>Dryers</span>
                     <a href="#" class="view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
                 </div>
                 <div class="status-content">
                     <div class="status-text">
-                        <h2>All Occupied</h2>
-                        <p>0 / 1 dryers</p>
+                        <h2>1 Available</h2>
+                        <p>1 / 1 dryers</p>
                     </div>
-                    <div class="status-circle dryer">
-                        <!-- <i class="fa-solid fa-socks"></i> -->
-                    </div>
+                    <div class="status-circle dryer-icon"></div>
                 </div>
             </div>
 
@@ -426,13 +488,22 @@
             <i class="fa-solid fa-shirt"></i>
             <span>Laundry</span>
         </div>
-        <div class="nav-item">
+        <div class="nav-item" onclick="onMoreClick()">
             <i class="fa-solid fa-bars"></i>
             <span>More</span>
         </div>
     </nav>
 
+    <div id="ad-overlay" class="ad-overlay" onclick="closeAdPopup(event)">
+        <div class="ad-popup">
+            <button class="ad-popup-close" aria-label="Close">&times;</button>
+            <img id="ad-image" src="" alt="Ad" />
+        </div>
+    </div>
+
     <script>
+        let adTimer = null;
+
         function switchTab(tabName, navElement) {
             const titleElement = document.getElementById('page-title');
             if(tabName === 'room') titleElement.innerText = "Room Summary";
@@ -443,6 +514,53 @@
 
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             navElement.classList.add('active');
+        }
+
+        function onStatusCardClick(cardEl) {
+            const type = cardEl.dataset.type || '';
+            const total = parseInt(cardEl.dataset.total || '1', 10);
+            let available = parseInt(cardEl.dataset.available || '1', 10);
+
+            const isCurrentlyAvailable = available > 0;
+            available = isCurrentlyAvailable ? 0 : total;
+            cardEl.dataset.available = String(available);
+
+            const statusTitle = cardEl.querySelector('.status-text h2');
+            const statusSubtitle = cardEl.querySelector('.status-text p');
+
+            if (statusTitle) {
+                if (available === 0) {
+                    statusTitle.textContent = 'All Occupied';
+                } else {
+                    statusTitle.textContent = `${available} Available`;
+                }
+            }
+
+            if (statusSubtitle) {
+                const label = type === 'dryer' ? 'dryers' : 'washers';
+                statusSubtitle.textContent = `${available} / ${total} ${label}`;
+            }
+        }
+
+        function onMoreClick() {
+            if (adTimer) clearTimeout(adTimer);
+            adTimer = setTimeout(showAdPopup, 5000);
+        }
+
+        function showAdPopup() {
+            adTimer = null;
+            const overlay = document.getElementById('ad-overlay');
+            const img = document.getElementById('ad-image');
+            // Replace with your image URL when ready
+            img.src = img.src || 'https://via.placeholder.com/400x300?text=Ad+Image';
+            overlay.classList.add('active');
+        }
+
+        function closeAdPopup(event) {
+            const overlay = document.getElementById('ad-overlay');
+            if (event.target === overlay || event.target.classList.contains('ad-popup-close')) {
+                overlay.classList.remove('active');
+            }
         }
     </script>
 </body>
